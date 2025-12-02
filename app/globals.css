@@ -1,0 +1,177 @@
+@import "tailwindcss";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+  --gold-400: #fbbf24;
+  --gold-500: #f59e0b;
+  --gold-600: #d97706;
+}
+
+@theme inline {
+  --color-gold-300: #fcd34d;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
+  --color-gold-600: #d97706;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #000000;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #f59e0b;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #fbbf24;
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  direction: rtl;
+}
+
+[dir="rtl"] .space-x-reverse>*+* {
+  margin-right: var(--space-x-reverse);
+  margin-left: 0;
+}
+
+/* Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
+  background-size: 1000px 100%;
+}
+
+/* Smooth Transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Focus Styles */
+*:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background-color: #f59e0b;
+  color: #000000;
+}
+
+/* Button Hover Effects */
+button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* Gold Button Glow Effect */
+.bg-gold-500:hover,
+.bg-gold-600:hover,
+.from-gold-600:hover,
+.to-gold-500:hover {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.6), 0 0 40px rgba(245, 158, 11, 0.3);
+}
+
+/* Language Switcher Active Button Glow */
+.bg-gold-500 {
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+}
+
+/* Navigation Button Spacing */
+.nav-button {
+  margin-right: 15px;
+  margin-left: 15px;
+  padding: 8px 16px;
+  background-color: #4b5563;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.nav-button:hover {
+  background-color: #374151;
+}
+
+/* Perfume Particles Animation */
+.perfume-particles {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 5;
+}
+
+.perfume-particles .particle {
+  position: absolute;
+  bottom: -40px;
+  animation: rise 8s linear infinite;
+  opacity: 0.95;
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(0) scale(0.9);
+    opacity: 0.95;
+  }
+
+  70% {
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: translateY(-120vh) scale(1);
+    opacity: 0;
+  }
+}
