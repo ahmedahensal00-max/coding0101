@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useGeminiChat } from "@/hooks/useGeminiChat";
 
 type Message = {
     role: "user" | "assistant";
@@ -14,8 +15,10 @@ export default function ChatWidget() {
         { role: "assistant", content: "Hello! How can I help you discover your perfect scent today?" },
     ]);
     const [input, setInput] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Use the custom hook for Gemini Chat
+    const { sendMessage, loading: isLoading } = useGeminiChat();
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -25,30 +28,6 @@ export default function ChatWidget() {
         scrollToBottom();
     }, [messages, isOpen]);
 
-    // Auto-login on mount to get token
-    useEffect(() => {
-        const login = async () => {
-            try {
-                // Check if we already have a token in localStorage
-                const storedToken = localStorage.getItem("chatToken");
-                if (storedToken) return;
-
-                const res = await fetch("/api/auth/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: "guest@coding0101.com" }),
-                });
-                const data = await res.json();
-                if (data.token) {
-                    localStorage.setItem("chatToken", data.token);
-                }
-            } catch (error) {
-                console.error("Failed to login:", error);
-            }
-        };
-        login();
-    }, []);
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!input.trim() || isLoading) return;
@@ -56,43 +35,16 @@ export default function ChatWidget() {
         const userMessage = input.trim();
         setInput("");
         setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
-        setIsLoading(true);
 
         try {
-            const token = localStorage.getItem("chatToken");
-            if (!token) throw new Error("No authentication token");
-
-            const response = await fetch("/api/ai/chat", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({ message: userMessage }),
-            });
-
-            if (response.status === 401) {
-                // Token might be expired, clear it
-                localStorage.removeItem("chatToken");
-                setMessages((prev) => [
-                    ...prev,
-                    { role: "assistant", content: "Session expired. Please refresh the page." },
-                ]);
-                return;
-            }
-
-            if (!response.ok) throw new Error("Failed to fetch response");
-
-            const data = await response.json();
-            setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+            const reply = await sendMessage(userMessage);
+            setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
         } catch (error) {
             console.error("Error:", error);
             setMessages((prev) => [
                 ...prev,
                 { role: "assistant", content: "Sorry, I encountered an error. Please try again." },
             ]);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -129,7 +81,7 @@ export default function ChatWidget() {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold">AI Assistant</h3>
-                                    <p className="text-xs text-white/80">Ask me anything about perfumes</p>
+                                    <p className="text-xs text-white/80">Powered by Gemini 1.5 Flash</p>
                                 </div>
                             </div>
                             <button
