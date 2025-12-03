@@ -15,7 +15,7 @@ export async function POST(req: Request) {
         const token = jwt.sign({ email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
 
         return NextResponse.json({ token });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
