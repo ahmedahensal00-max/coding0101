@@ -25,6 +25,30 @@ export default function ChatWidget() {
         scrollToBottom();
     }, [messages, isOpen]);
 
+    // Auto-login on mount to get token
+    useEffect(() => {
+        const login = async () => {
+            try {
+                // Check if we already have a token in localStorage
+                const storedToken = localStorage.getItem("chatToken");
+                if (storedToken) return;
+
+                const res = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: "guest@coding0101.com" }),
+                });
+                const data = await res.json();
+                if (data.token) {
+                    localStorage.setItem("chatToken", data.token);
+                }
+            } catch (error) {
+                console.error("Failed to login:", error);
+            }
+        };
+        login();
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!input.trim() || isLoading) return;
@@ -35,11 +59,27 @@ export default function ChatWidget() {
         setIsLoading(true);
 
         try {
+            const token = localStorage.getItem("chatToken");
+            if (!token) throw new Error("No authentication token");
+
             const response = await fetch("/api/ai/chat", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({ message: userMessage }),
             });
+
+            if (response.status === 401) {
+                // Token might be expired, clear it
+                localStorage.removeItem("chatToken");
+                setMessages((prev) => [
+                    ...prev,
+                    { role: "assistant", content: "Session expired. Please refresh the page." },
+                ]);
+                return;
+            }
 
             if (!response.ok) throw new Error("Failed to fetch response");
 

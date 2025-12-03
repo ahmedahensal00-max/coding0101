@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
 export function verifyToken(req: Request) {
@@ -13,8 +12,4 @@ export function verifyToken(req: Request) {
     } catch {
         return null;
     }
-}
-
-export function generateToken(payload: object, expiresIn: string = "7d") {
-    return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn });
 }

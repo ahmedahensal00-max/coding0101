@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { verifyToken } from "@/middleware/auth";
+import { verifyToken } from "@/app/api/auth/verifyToken";
 
 export async function POST(req: Request) {
     // Verify JWT token
@@ -21,27 +20,42 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing API key" }, { status: 500 });
         }
 
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        // Gemini API Endpoint (gemini-1.5-flash)
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-        const chat = model.startChat({
-            history: [
+        const payload = {
+            contents: [
                 {
                     role: "user",
-                    parts: [{ text: "You are a helpful assistant for coding1010, a luxury perfume e-commerce website. Help customers with their questions about perfumes, recommendations, and orders." }],
-                },
-                {
-                    role: "model",
-                    parts: [{ text: "Hello! I'm here to help you discover your perfect scent. How can I assist you today?" }],
-                },
+                    parts: [{ text: message }]
+                }
             ],
+            systemInstruction: {
+                parts: [{ text: "You are a helpful assistant for coding0101, a luxury perfume e-commerce website. Help customers with their questions about perfumes, recommendations, and orders." }]
+            }
+        };
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
         });
 
-        const result = await chat.sendMessage(message);
-        const response = await result.response;
-        const reply = response.text();
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Gemini API Error:", errorData);
+            return NextResponse.json({ error: "Failed to fetch from Gemini API" }, { status: response.status });
+        }
+
+        const data = await response.json();
+
+        // Extract the text from the response
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't generate a response.";
 
         return NextResponse.json({ reply });
+
     } catch (error) {
         console.error("Chat API error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
