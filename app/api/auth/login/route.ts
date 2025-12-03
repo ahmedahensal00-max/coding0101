@@ -3,19 +3,20 @@ import jwt from "jsonwebtoken";
 
 export async function POST(req: Request) {
     try {
-        const { email } = await req.json();
+        const body = await req.json();
+        const { email, password } = body;
 
-        if (!email) {
-            return NextResponse.json({ error: "Email is required" }, { status: 400 });
+        // مثال للتحقق من المستخدم (تبدلها بالتحقق الفعلي من قاعدة البيانات)
+        if (email !== "test@example.com" || password !== "password123") {
+            return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
         }
 
-        // In a real app, you would verify the email/password against a database here
-        // For this demo, we'll just generate a token for the provided email
-
+        // توليد JWT
         const token = jwt.sign({ email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
 
         return NextResponse.json({ token });
-    } catch {
+    } catch (error) {
+        console.error(error); // هاد السطر مهم باش تشوف الأخطاء ف logs
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
